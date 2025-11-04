@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>EVN‑SPC | MBA Tracker (PWA)</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0ea5e9">
+  <style>
+    :root{ --brand:#0ea5e9; --text:#0f172a; --muted:#64748b; --ok:#16a34a; --bad:#ef4444; --bg:#f6f8fb; --card:#fff; --ring:rgba(14,165,233,.35); }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:980px;margin:0 auto;padding:12px}
+    header{position:sticky;top:0;background:var(--bg);z-index:50;border-bottom:1px solid #e5e7eb}
+    .brand{display:flex;align-items:center;gap:10px;padding:10px 12px}
+    .dot{width:10px;height:10px;border-radius:9999px;background:var(--brand)}
+    .brand h1{margin:0;font-size:16px;font-weight:800}
+    nav{display:flex;gap:8px;padding:0 12px 10px}
+    nav button{border:1px solid #cbd5e1;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+    nav button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.04);padding:12px;margin:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    @media (max-width:760px){ .row,.row3,.row4{grid-template-columns:1fr} .wrap{padding:8px} }
+    label{display:block;font-size:12px;color:var(--muted);margin:6px 2px}
+    input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;outline:none}
+    input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px var(--ring);border-color:var(--brand)}
+    .flex{display:flex;gap:8px;align-items:center}
+    .right{margin-left:auto}
+    .btn{border:0;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
+    .btn.secondary{background:#0b6aa2}
+    .danger{background:var(--bad)}
+    .muted{color:var(--muted)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #e5e7eb;font-size:14px;text-align:left}
+    .kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .kpi .card{margin:0;padding:10px;text-align:center}
+    .kpi .num{font-weight:800;font-size:18px}
+    .footer{padding:40px 12px;color:var(--muted);text-align:center}
+    .warn{color:#d97706}
+    .ok{color:var(--ok)} .bad{color:var(--bad)}
+    .install{position:fixed;bottom:12px;left:12px;right:12px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:12px;display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="dot"></div>
+        <h1>EVN‑SPC | MBA Tracker</h1>
+        <span class="muted right" id="status">Offline</span>
+      </div>
+      <nav>
+        <button class="active" data-tab="tab-input">Nhập liệu</button>
+        <button data-tab="tab-history">Lịch sử</button>
+        <button data-tab="tab-stats">Thống kê</button>
+        <button data-tab="tab-report">Báo cáo</button>
+      </nav>
+    </header>
+
+    <!-- Nhập liệu -->
+    <section id="tab-input" class="card">
+      <h3>Ghi nhận thông số MBA</h3>
+      <div class="row">
+        <div>
+          <label>Máy biến áp</label>
+          <input id="f_q" placeholder="Tìm theo mã/tên/khu vực...">
+          <div class="muted" id="f_pick_info"></div>
+          <div id="f_list" class="card" style="max-height:220px;overflow:auto"></div>
+        </div>
+        <div>
+          <div class="row">
+            <div>
+              <label>Điện áp V (kV)</label><input id="f_V" type="number" step="0.01">
+            </div>
+            <div>
+              <label>Dòng I (A)</label><input id="f_I" type="number" step="0.1">
+            </div>
+          </div>
+          <div class="row">
+            <div><label>Công suất P (kW)</label><input id="f_P" type="number" step="0.1"></div>
+            <div><label>Nhiệt độ cuộn (°C)</label><input id="f_temp" type="number" step="0.1"></div>
+          </div>
+          <div class="row">
+            <div><label>Nhiệt độ dầu (°C)</label><input id="f_oil" type="number" step="0.1"></div>
+            <div><label>Vị trí nấc (tap)</label><input id="f_tap" type="text" placeholder="1..n"></div>
+          </div>
+          <div class="row">
+            <div><label>Tải (%)</label><input id="f_load" type="number" step="0.1"></div>
+            <div>
+              <label>Trạng thái</label>
+              <select id="f_status">
+                <option>OK</option><option>WARNING</option><option>ALARM</option>
+              </select>
+            </div>
+          </div>
+          <label>Ghi chú</label><textarea id="f_note" rows="2" placeholder="Ghi chú hiện trường..."></textarea>
+          <div class="flex" style="margin-top:8px">
+            <input id="f_photo" type="file" accept="image/*" capture="environment">
+            <button class="btn secondary" id="btn_loc">Lấy vị trí</button>
+            <span class="muted" id="loc_info"></span>
+            <div class="right"></div>
+            <button class="btn" id="btn_submit">Lưu</button>
+          </div>
+          <div class="muted" id="queue_info"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lịch sử -->
+    <section id="tab-history" class="card" hidden>
+      <div class="flex">
+        <h3>Lịch sử gần đây</h3>
+        <div class="right"></div>
+        <input id="h_id" placeholder="Mã MBA (tuỳ chọn)" style="max-width:180px">
+        <input id="h_from" type="date">
+        <input id="h_to" type="date">
+        <button class="btn" id="btn_history">Tải</button>
+      </div>
+      <div style="overflow:auto">
+        <table id="hist_tbl">
+          <thead><tr>
+            <th>Thời gian</th><th>MBA</th><th>P(kW)</th><th>T(°C)</th><th>Oil(°C)</th><th>Tải%</th><th>TT</th><th>Ghi chú</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Thống kê -->
+    <section id="tab-stats" class="card" hidden>
+      <div class="flex">
+        <h3>Thống kê</h3>
+        <div class="right"></div>
+        <input id="s_id" placeholder="Mã MBA (tuỳ chọn)" style="max-width:180px">
+        <input id="s_from" type="date">
+        <input id="s_to" type="date">
+        <button class="btn" id="btn_stats">Phân tích</button>
+      </div>
+      <div class="kpi">
+        <div class="card"><div class="muted">Bản ghi</div><div class="num" id="k_count">0</div></div>
+        <div class="card"><div class="muted">Avg Temp</div><div class="num" id="k_avgT">0</div></div>
+        <div class="card"><div class="muted">Avg Oil</div><div class="num" id="k_avgO">0</div></div>
+        <div class="card"><div class="muted">Avg Load%</div><div class="num" id="k_avgL">0</div></div>
+        <div class="card"><div class="muted">Max Load%</div><div class="num" id="k_maxL">0</div></div>
+      </div>
+      <div class="card">
+        <canvas id="chart1" height="160"></canvas>
+      </div>
+      <div class="card">
+        <canvas id="chart2" height="160"></canvas>
+      </div>
+      <div class="card">
+        <h4>Bất thường gần đây</h4>
+        <ul id="anom"></ul>
+      </div>
+    </section>
+
+    <!-- Báo cáo -->
+    <section id="tab-report" class="card" hidden>
+      <h3>Báo cáo sự cố/điểm bất thường</h3>
+      <div class="row">
+        <div>
+          <label>Mã MBA</label><input id="r_id" placeholder="VD: MBA001">
+          <label>Loại sự cố</label><input id="r_type" placeholder="rò rỉ dầu / quá nhiệt / tiếng ồn...">
+          <label>Mức độ</label>
+          <select id="r_sev"><option>minor</option><option>major</option><option>critical</option></select>
+        </div>
+        <div>
+          <label>Nội dung</label><textarea id="r_msg" rows="5" placeholder="Mô tả chi tiết..."></textarea>
+          <div class="flex" style="margin-top:8px">
+            <input id="r_photo" type="file" accept="image/*" capture="environment">
+            <button class="btn secondary" id="r_loc">Vị trí</button>
+            <div class="right"></div>
+            <button class="btn danger" id="btn_report">Gửi báo cáo</button>
+          </div>
+          <div class="muted" id="r_locinfo"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="install" id="installBox">
+      <div class="flex">
+        <div><b>Cài đặt PWA</b> để dùng nhanh hơn</div>
+        <div class="right"></div>
+        <button class="btn" id="btn_install">Cài đặt</button>
+        <button class="btn secondary" id="btn_install_close">Đóng</button>
+      </div>
+    </div>
+
+    <div class="footer">EVN‑SPC · MBA Tracker · PWA</div>
+  </div>
+
+  <script>
+    const BASE = "WEBAPP_URL_PLACEHOLDER";
+    const API  = BASE + "?p=api";
+    const state = { pick:null, loc:null, deferredPrompt:null, charts:[] };
+
+    // ---- PWA install prompt ----
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); state.deferredPrompt = e;
+      document.getElementById('installBox').style.display = 'block';
+    });
+    document.getElementById('btn_install').onclick = async () => {
+      if (!state.deferredPrompt) return;
+      state.deferredPrompt.prompt(); state.deferredPrompt = null;
+      document.getElementById('installBox').style.display = 'none';
+    };
+    document.getElementById('btn_install_close').onclick = () => {
+      document.getElementById('installBox').style.display = 'none';
+    };
+
+    // ---- Tabs ----
+    document.querySelectorAll('nav button').forEach(btn=>btn.onclick=()=>{
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.getAttribute('data-tab');
+      document.querySelectorAll('section.card').forEach(s=>s.hidden = (s.id!==tab));
+    });
+
+    // ---- Online/offline ----
+    function setOnlineStatus(){
+      const on = navigator.onLine;
+      document.getElementById('status').textContent = on ? "Online" : "Offline";
+    }
+    window.addEventListener('online', ()=>{ setOnlineStatus(); flushQueue(); });
+    window.addEventListener('offline', setOnlineStatus);
+    setOnlineStatus();
+
+    // ---- API helpers ----
+    async function apiGet(fn, params={}){
+      const qs = new URLSearchParams(Object.assign({fn}, params)).toString();
+      const r = await fetch(API+"&"+qs, {credentials:"same-origin"});
+      const j = await r.json(); if (!j.ok) throw new Error(j.error||"API error"); return j.data;
+    }
+    async function apiPost(action, data={}){
+      const r = await fetch(API, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(Object.assign({action}, data)),
+        credentials: "same-origin"
+      });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error||"API error"); return j.data;
+    }
+
+    // ---- Transformer picker ----
+    const el_q = document.getElementById('f_q');
+    const el_list = document.getElementById('f_list');
+    const el_pick_info = document.getElementById('f_pick_info');
+    el_q.addEventListener('input', async ()=>{
+      const q = el_q.value.trim(); if (!q) { el_list.innerHTML=""; return; }
+      try{
+        const data = await apiGet("list_transformers", {q});
+        el_list.innerHTML = data.map(r=>`<div class="flex" style="padding:8px;border-bottom:1px solid #eee;cursor:pointer" data-id="${r.id}" data-name="${r.name}">
+          <div><b>${r.id}</b> — ${r.name}<div class="muted" style="font-size:12px">${r.location||""}</div></div>
+          <div class="right muted">${r.rated_kVA||""} kVA</div>
+        </div>`).join("");
+        el_list.querySelectorAll('div[data-id]').forEach(d=>d.onclick=()=>{
+          state.pick = { id:d.dataset.id, name:d.dataset.name };
+          el_pick_info.textContent = `Đã chọn: ${state.pick.id} — ${state.pick.name}`;
+        });
+      }catch(err){ console.error(err); }
+    });
+
+    // ---- Geolocation ----
+    document.getElementById('btn_loc').onclick = async ()=>{
+      try{
+        const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true,timeout:10000}));
+        state.loc = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+        document.getElementById('loc_info').textContent = `${state.loc.lat.toFixed(6)}, ${state.loc.lng.toFixed(6)}`;
+      }catch(e){ alert("Không lấy được vị trí: "+e.message); }
+    };
+
+    // ---- Base64 photo ----
+    async function fileToDataURL(input){
+      const f = input.files && input.files[0]; if (!f) return "";
+      return await new Promise((res,rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result); r.onerror=rej; r.readAsDataURL(f);
+      });
+    }
+
+    // ---- Local queue (offline) ----
+    function getQueue(){ try{ return JSON.parse(localStorage.getItem("mba_queue")||"[]"); }catch(e){ return []; } }
+    function setQueue(arr){ localStorage.setItem("mba_queue", JSON.stringify(arr)); }
+    function updateQueueInfo(){
+      const n = getQueue().length;
+      document.getElementById('queue_info').textContent = n? `Hàng đợi chưa gửi: ${n}` : "";
+    }
+    async function flushQueue(){
+      if (!navigator.onLine) return;
+      const q = getQueue(); if (!q.length) return;
+      const remain=[];
+      for (const it of q){
+        try{ await apiPost(it.action, it.data); }
+        catch(e){ remain.push(it); }
+      }
+      setQueue(remain); updateQueueInfo();
+    }
+
+    // ---- Submit reading ----
+    document.getElementById('btn_submit').onclick = async ()=>{
+      try{
+        if (!state.pick) { alert("Chọn máy biến áp trước"); return; }
+        const payload = {
+          transformer_id: state.pick.id,
+          V_kV: +document.getElementById('f_V').value || "",
+          I_A: +document.getElementById('f_I').value || "",
+          P_kW: +document.getElementById('f_P').value || "",
+          temp_C: +document.getElementById('f_temp').value || "",
+          oilTemp_C: +document.getElementById('f_oil').value || "",
+          tapPos: document.getElementById('f_tap').value.trim(),
+          load_pct: +document.getElementById('f_load').value || "",
+          status: document.getElementById('f_status').value,
+          note: document.getElementById('f_note').value.trim(),
+          deviceId: navigator.userAgent.slice(0,120)
+        };
+        if (state.loc){ payload.lat = state.loc.lat; payload.lng = state.loc.lng; }
+        const p64 = await fileToDataURL(document.getElementById('f_photo')); if (p64) payload.photoBase64 = p64;
+        if (!navigator.onLine){
+          const q = getQueue(); q.push({action:"add_reading", data:payload}); setQueue(q); updateQueueInfo();
+          alert("Đã lưu vào hàng đợi (offline). Sẽ tự gửi khi online.");
+        } else {
+          await apiPost("add_reading", payload);
+          alert("Đã lưu!");
+        }
+        // reset
+        ['f_V','f_I','f_P','f_temp','f_oil','f_tap','f_load','f_note'].forEach(id=>document.getElementById(id).value="");
+        document.getElementById('f_photo').value="";
+      }catch(e){ alert("Lỗi: "+e.message); }
+    };
+
+    // ---- History ----
+    document.getElementById('btn_history').onclick = async ()=>{
+      try{
+        const id = document.getElementById('h_id').value.trim();
+        const from = document.getElementById('h_from').value;
+        const to   = document.getElementById('h_to').value;
+        const data = await apiGet("history", {id, from, to, limit:200});
+        const tb = document.querySelector('#hist_tbl tbody'); tb.innerHTML="";
+        for (const r of data){
+          const cls = r.status==="ALARM"?"bad":(r.status==="WARNING"?"warn":"ok");
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${r.tsISO||""}</td>
+                          <td>${r.transformer_id||""}</td>
+                          <td>${r.P_kW||""}</td>
+                          <td>${r.temp_C||""}</td>
+                          <td>${r.oilTemp_C||""}</td>
+                          <td>${r.load_pct||""}</td>
+                          <td class="${cls}">${r.status||""}</td>
+                          <td>${(r.note||"").slice(0,80)}</td>`;
+          tb.appendChild(tr);
+        }
+      }catch(e){ alert("Lỗi tải lịch sử: "+e.message); }
+    };
+
+    // ---- Stats ----
+    let chart1, chart2;
+    async function drawCharts(d){
+      const ctx1 = document.getElementById('chart1').getContext('2d');
+      const ctx2 = document.getElementById('chart2').getContext('2d');
+      if (chart1) chart1.destroy(); if (chart2) chart2.destroy();
+      chart1 = new Chart(ctx1, {
+        type: 'line',
+        data: { labels: d.series.ts, datasets: [{label:'Temp (°C)', data: d.series.temp}, {label:'Oil (°C)', data: d.series.oilTemp}] },
+        options: { responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }
+      });
+      chart2 = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels: d.series.ts, datasets: [{label:'Load %', data: d.series.load}, {label:'P kW', data: d.series.P_kW}] },
+        options: { responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }
+      });
+    }
+    document.getElementById('btn_stats').onclick = async ()=>{
+      try{
+        const id = document.getElementById('s_id').value.trim();
+        const from = document.getElementById('s_from').value;
+        const to   = document.getElementById('s_to').value;
+        const d = await apiGet("stats", {id, from, to});
+        document.getElementById('k_count').textContent = d.count;
+        document.getElementById('k_avgT').textContent = d.avgTemp;
+        document.getElementById('k_avgO').textContent = d.avgOilTemp;
+        document.getElementById('k_avgL').textContent = d.avgLoadPct;
+        document.getElementById('k_maxL').textContent = d.maxLoadPct;
+        // anomalies
+        const ul = document.getElementById('anom'); ul.innerHTML="";
+        d.anomalies.forEach(a=>{
+          const li = document.createElement('li');
+          li.textContent = `${a.tsISO} — ${a.transformer_id} — T:${a.temp_C} Oil:${a.oilTemp_C} Load:${a.load_pct}% — ${a.status}`;
+          ul.appendChild(li);
+        });
+        drawCharts(d);
+      }catch(e){ alert("Lỗi thống kê: "+e.message); }
+    };
+
+    // ---- Reports ----
+    document.getElementById('r_loc').onclick = async ()=>{
+      try{
+        const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true,timeout:10000}));
+        state.loc = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+        document.getElementById('r_locinfo').textContent = `${state.loc.lat.toFixed(6)}, ${state.loc.lng.toFixed(6)}`;
+      }catch(e){ alert("Không lấy được vị trí: "+e.message); }
+    };
+    document.getElementById('btn_report').onclick = async ()=>{
+      try{
+        const payload = {
+          transformer_id: document.getElementById('r_id').value.trim(),
+          type: document.getElementById('r_type').value.trim(),
+          severity: document.getElementById('r_sev').value,
+          message: document.getElementById('r_msg').value.trim()
+        };
+        if (!payload.transformer_id) { alert("Nhập mã MBA"); return; }
+        if (state.loc){ payload.lat = state.loc.lat; payload.lng = state.loc.lng; }
+        const p64 = await fileToDataURL(document.getElementById('r_photo')); if (p64) payload.photoBase64 = p64;
+        if (!navigator.onLine){
+          const q = getQueue(); q.push({action:"add_report", data:payload}); setQueue(q); updateQueueInfo();
+          alert("Đã lưu báo cáo vào hàng đợi (offline).");
+        } else {
+          await apiPost("add_report", payload);
+          alert("Đã gửi báo cáo!");
+        }
+        ['r_id','r_type','r_msg'].forEach(id=>document.getElementById(id).value="");
+        document.getElementById('r_photo').value="";
+      }catch(e){ alert("Lỗi gửi báo cáo: "+e.message); }
+    };
+
+    // ---- SW ----
+    if ("serviceWorker" in navigator){
+      window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+
+    // ---- Init ----
+    (async function init(){
+      updateQueueInfo();
+      // preload Chart.js (sẽ được SW cache ở lần sau)
+      const s = document.createElement('script');
+      s.src = "https://cdn.jsdelivr.net/npm/chart.js"; document.body.appendChild(s);
+      // ping config để sẵn sàng
+      try{ await apiGet("config"); }catch(e){ console.warn("API config:", e.message); }
+    })();
+  </script>
+</body>
+</html>
