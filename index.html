@@ -211,7 +211,7 @@
   </div>
 
   <script>
-    const BASE = "WEBAPP_URL_PLACEHOLDER";
+    const BASE = "https://script.google.com/macros/s/AKfycbyTRo8I5pMxVGyyRbA1rByGNNjQ2TxI5U9PJwPkqcldurmphAwpEx8jMwsNrSJW7l8z/exec"; // URL exec của anh
     const API  = BASE + "?p=api";
     const st   = { pick:null, loc:null, me:null, cfg:null, deferredPrompt:null, mediaStream:null, map:null, mapReady:false };
 
@@ -440,7 +440,9 @@
     function setText(id,v){ document.getElementById(id).textContent=v; }
 
     /* SW */
-    if ("serviceWorker" in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register(BASE+'?p=sw'); }); }
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+    }
 
     /* Utils */
     function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
