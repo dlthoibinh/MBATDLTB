@@ -1,4 +1,4 @@
-<script>
+
 /* EVN-SPC | MBA Tracker PRO — Service Worker */
 const VERSION = "v1.1.0-static";
 const APP_SHELL = [
@@ -44,4 +44,4 @@ self.addEventListener("fetch", e=>{
     }
   })());
 });
-</script>
+
