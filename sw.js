@@ -1,16 +1,18 @@
 <script>
 /* EVN-SPC | MBA Tracker PRO — Service Worker */
-const VERSION = 'v1.1.0-pro';
+const VERSION = "v1.1.0-static";
 const APP_SHELL = [
-  './', './?p=manifest',
+  "./",
+  "./index.html",
+  "./manifest.json"
 ];
 
-self.addEventListener('install', (e)=>{
+self.addEventListener("install", e=>{
   e.waitUntil(caches.open(VERSION).then(c=>c.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e)=>{
+self.addEventListener("activate", e=>{
   e.waitUntil((async()=>{
     const keys = await caches.keys();
     await Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)));
@@ -18,31 +20,27 @@ self.addEventListener('activate', (e)=>{
   })());
 });
 
-self.addEventListener('fetch', (e)=>{
+self.addEventListener("fetch", e=>{
   const url = new URL(e.request.url);
-  // API: network-first
-  if (url.searchParams.get('p')==='api'){
+  // API (script.google.com) → network-first
+  if (url.hostname.includes("script.google.com")) {
     e.respondWith((async()=>{
-      try{
-        const r = await fetch(e.request);
-        return r;
-      }catch(err){
-        return new Response(JSON.stringify({ok:false,error:"offline"}), {headers:{'Content-Type':'application/json'}});
-      }
+      try { return await fetch(e.request); }
+      catch { return new Response(JSON.stringify({ok:false,error:"offline"}), {headers:{'Content-Type':'application/json'}}); }
     })());
     return;
   }
-  // Static: cache-first
+  // Tệp tĩnh → cache-first
   e.respondWith((async()=>{
     const cache = await caches.open(VERSION);
     const cached = await cache.match(e.request);
     if (cached) return cached;
-    try{
+    try {
       const r = await fetch(e.request);
-      if (r && r.ok && e.request.method==='GET') cache.put(e.request, r.clone());
+      if (r && r.ok && e.request.method === "GET") cache.put(e.request, r.clone());
       return r;
-    }catch(err){
-      return cached || new Response('Offline', {status:503});
+    } catch {
+      return cached || new Response("Offline", {status:503});
     }
   })());
 });
