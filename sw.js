@@ -1,10 +1,8 @@
-// EVN‑SPC | MBA Tracker — Service Worker (sw.js)
-const VERSION = 'v1.0.0';
+<script>
+/* EVN-SPC | MBA Tracker PRO — Service Worker */
+const VERSION = 'v1.1.0-pro';
 const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.json',
-  './sw.js'
+  './', './?p=manifest',
 ];
 
 self.addEventListener('install', (e)=>{
@@ -25,30 +23,27 @@ self.addEventListener('fetch', (e)=>{
   // API: network-first
   if (url.searchParams.get('p')==='api'){
     e.respondWith((async()=>{
-      try {
+      try{
         const r = await fetch(e.request);
-        const clone = r.clone();
         return r;
-      } catch(err){
-        // API offline: trả lỗi JSON
+      }catch(err){
         return new Response(JSON.stringify({ok:false,error:"offline"}), {headers:{'Content-Type':'application/json'}});
       }
     })());
     return;
   }
-  // Static: cache-first, fallback to network
+  // Static: cache-first
   e.respondWith((async()=>{
     const cache = await caches.open(VERSION);
     const cached = await cache.match(e.request);
     if (cached) return cached;
-    try {
+    try{
       const r = await fetch(e.request);
-      if (r && r.ok && (e.request.method==='GET')) cache.put(e.request, r.clone());
+      if (r && r.ok && e.request.method==='GET') cache.put(e.request, r.clone());
       return r;
-    } catch(err) {
-      // Offline fallback: index
-      const fallback = await cache.match('./index.html');
-      return fallback || new Response('Offline', {status:503});
+    }catch(err){
+      return cached || new Response('Offline', {status:503});
     }
   })());
 });
+</script>
