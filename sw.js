@@ -1,17 +1,11 @@
-
-/* EVN-SPC | MBA Tracker PRO — Service Worker */
+/* EVN-SPC | MBA Tracker PRO — Service Worker (GitHub Pages) */
 const VERSION = "v1.1.0-static";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.json"
-];
+const APP_SHELL = ["./","./index.html","./manifest.json"];
 
 self.addEventListener("install", e=>{
   e.waitUntil(caches.open(VERSION).then(c=>c.addAll(APP_SHELL)));
   self.skipWaiting();
 });
-
 self.addEventListener("activate", e=>{
   e.waitUntil((async()=>{
     const keys = await caches.keys();
@@ -19,10 +13,9 @@ self.addEventListener("activate", e=>{
     self.clients.claim();
   })());
 });
-
 self.addEventListener("fetch", e=>{
   const url = new URL(e.request.url);
-  // API (script.google.com) → network-first
+  // script.google.com → network-first (tránh cache API)
   if (url.hostname.includes("script.google.com")) {
     e.respondWith((async()=>{
       try { return await fetch(e.request); }
@@ -30,7 +23,7 @@ self.addEventListener("fetch", e=>{
     })());
     return;
   }
-  // Tệp tĩnh → cache-first
+  // tệp tĩnh → cache-first
   e.respondWith((async()=>{
     const cache = await caches.open(VERSION);
     const cached = await cache.match(e.request);
@@ -44,4 +37,3 @@ self.addEventListener("fetch", e=>{
     }
   })());
 });
-
