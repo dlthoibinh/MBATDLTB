@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>EVN-SPC | MBA Tracker (PRO)</title>
-  <link rel="manifest" href="WEBAPP_URL_PLACEHOLDER?p=manifest">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0ea5e9">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <style>
@@ -39,9 +39,8 @@
     .kpi .card{margin:0;padding:10px;text-align:center}
     .kpi .num{font-weight:800;font-size:18px}
     .footer{padding:40px 12px;color:var(--muted);text-align:center}
-    .warn{color:#d97706}.ok{color:var(--ok)}.bad{color:var(--bad)}
+    .warn{color:#d97706}.ok{color:var(--ok)}.bad{color:#ef4444}
     .install{position:fixed;bottom:12px;left:12px;right:12px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:12px;display:none}
-    /* QR overlay */
     #qr_overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
     #qr_box{background:#000;border-radius:12px;padding:8px}
     #qr_video{width:min(96vw,520px);height:auto;border-radius:10px}
@@ -202,164 +201,89 @@
 
     <!-- QR Overlay -->
     <div id="qr_overlay">
-      <div id="qr_box">
-        <video id="qr_video" autoplay playsinline></video>
-      </div>
+      <div id="qr_box"><video id="qr_video" autoplay playsinline></video></div>
     </div>
 
     <div class="footer">EVN-SPC · MBA Tracker PRO · v1.1</div>
   </div>
 
   <script>
-    const BASE = "https://script.google.com/macros/s/AKfycbyTRo8I5pMxVGyyRbA1rByGNNjQ2TxI5U9PJwPkqcldurmphAwpEx8jMwsNrSJW7l8z/exec"; // URL exec của anh
-    const API  = BASE + "?p=api";
-    const st   = { pick:null, loc:null, me:null, cfg:null, deferredPrompt:null, mediaStream:null, map:null, mapReady:false };
+    /* ==== CONFIG: Dán URL exec của Apps Script vào đây ==== */
+    const BASE = "https://script.google.com/macros/s/AKfycbyTRo8I5pMxVGyyRbA1rByGNNjQ2TxI5U9PJwPkqcldurmphAwpEx8jMwsNrSJW7l8z/exec";
 
-    /* Tabs */
-    document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
-      document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      const tab = b.getAttribute('data-tab');
-      document.querySelectorAll('section.card').forEach(s=>s.hidden = (s.id!==tab));
-    });
+    const st = { pick:null, loc:null, me:null, cfg:null, deferredPrompt:null, mediaStream:null, map:null };
+    document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); const tab=b.getAttribute('data-tab'); document.querySelectorAll('section.card').forEach(s=>s.hidden=(s.id!==tab)); });
 
-    /* Install prompt */
     window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); st.deferredPrompt=e; document.getElementById('installBox').style.display='block'; });
     document.getElementById('btn_install').onclick = async ()=>{ if(!st.deferredPrompt) return; st.deferredPrompt.prompt(); st.deferredPrompt=null; document.getElementById('installBox').style.display='none'; };
     document.getElementById('btn_install_close').onclick = ()=>{ document.getElementById('installBox').style.display='none'; };
 
-    /* Online indicator in header (role/email) */
-    function setUser(u){
-      const el = document.getElementById('usr');
-      el.textContent = `${u.email||'anonymous'} · ${u.role||'guest'} · ${navigator.onLine?'Online':'Offline'}`;
-    }
-    window.addEventListener('online', ()=>{ if(st.me) setUser(st.me); flushQueue(); });
-    window.addEventListener('offline', ()=>{ if(st.me) setUser(st.me); });
+    function setUser(u){ const el=document.getElementById('usr'); el.textContent=`${u.email||'anonymous'} · ${u.role||'guest'} · ${navigator.onLine?'Online':'Offline'}`; }
+    window.addEventListener('online', flushQueue); window.addEventListener('offline', ()=>{ if(st.me) setUser(st.me); });
 
-    /* API helpers */
-    async function apiGet(fn, params={}){
-      const qs = new URLSearchParams(Object.assign({fn}, params)).toString();
-      const r = await fetch(API+"&"+qs, {credentials:"same-origin"});
-      const j = await r.json(); if (!j.ok) throw new Error(j.error||"API error"); return j.data;
+    /* --- API helpers: GET/POST không preflight --- */
+    async function apiGet(fn, params = {}) {
+      const qs = new URLSearchParams(Object.assign({ p:'api', fn }, params));
+      const r = await fetch(BASE + '?' + qs.toString(), { method:'GET' });
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      const j = await r.json(); if (!j.ok) throw new Error(j.error||'API error'); return j.data;
     }
-    async function apiPost(action, data={}){
-      const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(Object.assign({action}, data)), credentials:"same-origin" });
-      const j = await r.json(); if (!j.ok) throw new Error(j.error||"API error"); return j.data;
+    async function apiPost(action, data = {}) {
+      const form = new URLSearchParams(); form.set('p','api'); form.set('action',action); form.set('payload', JSON.stringify(data));
+      const r = await fetch(BASE, { method:'POST', body: form });
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      const j = await r.json(); if (!j.ok) throw new Error(j.error||'API error'); return j.data;
     }
 
-    /* ROLE guard: disable inputs for guest */
-    function guardRole(){
-      if (!st.me) return;
-      const canWrite = ["admin","lanhdao","leader","totruong","trucban","nhanvien"].includes(st.me.role);
-      document.getElementById('btn_submit').disabled = !canWrite;
-      document.getElementById('btn_report').disabled = !canWrite;
-    }
+    function guardRole(){ if(!st.me) return; const canWrite=["admin","lanhdao","leader","totruong","trucban","nhanvien"].includes(st.me.role) || String(st.me.cfg.AUTH_OPEN||"0")==="1"; document.getElementById('btn_submit').disabled=!canWrite; document.getElementById('btn_report').disabled=!canWrite; }
 
-    /* Transformer list */
+    /* Danh sách MBA */
     const el_q = document.getElementById('f_q'), el_list=document.getElementById('f_list'), el_info=document.getElementById('f_pick_info');
     async function reloadList(){
       const q = el_q.value.trim();
       const data = await apiGet("list_transformers",{q});
-      el_list.innerHTML = data.map(r=>`<div class="row" style="padding:8px;border-bottom:1px solid #eee;cursor:pointer" data-id="${r.id}" data-name="${r.name}">
-        <div><b>${r.id}</b> — ${r.name}<div class="muted" style="font-size:12px">${r.location||""}</div></div>
-        <div style="text-align:right">${r.rated_kVA||""} kVA</div>
-      </div>`).join("");
-      el_list.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{
-        st.pick = { id:d.dataset.id, name:d.dataset.name };
-        el_info.textContent = `Đã chọn: ${st.pick.id} — ${st.pick.name}`;
-      });
+      el_list.innerHTML = data.map(r=>`<div class="row" style="padding:8px;border-bottom:1px solid #eee;cursor:pointer" data-id="${r.id}" data-name="${r.name}"><div><b>${r.id}</b> — ${r.name}<div class="muted" style="font-size:12px">${r.location||""}</div></div><div style="text-align:right">${r.rated_kVA||""} kVA</div></div>`).join("");
+      el_list.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{ st.pick={id:d.dataset.id, name:d.dataset.name}; el_info.textContent=`Đã chọn: ${st.pick.id} — ${st.pick.name}`; });
     }
     el_q.addEventListener('input', debounce(reloadList, 200));
     document.getElementById('btn_reload').onclick = reloadList;
 
-    /* Geolocation + map */
-    async function getLocation(targetTxtId, infoId){
+    /* Vị trí + map */
+    document.getElementById('btn_loc').onclick = ()=>getLocation('loc_info');
+    document.getElementById('r_loc').onclick  = ()=>getLocation('r_locinfo');
+    async function getLocation(infoId){
       try{
         const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true,timeout:10000}));
         st.loc = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-        if (infoId) document.getElementById(infoId).textContent = `${st.loc.lat.toFixed(6)}, ${st.loc.lng.toFixed(6)}`;
-        if (st.cfg && Number(st.cfg.FEATURE_MAP||1)) showMap(st.loc);
+        document.getElementById(infoId).textContent = `${st.loc.lat.toFixed(6)}, ${st.loc.lng.toFixed(6)}`;
+        if (Number(st.cfg.FEATURE_MAP||1)) showMap(st.loc);
       }catch(e){ alert("Không lấy được vị trí: "+e.message); }
     }
-    document.getElementById('btn_loc').onclick = ()=>getLocation(null, 'loc_info');
-    document.getElementById('r_loc').onclick  = ()=>getLocation(null, 'r_locinfo');
+    function ensureLeaflet(){ return new Promise((res)=>{ if (window.L){res();return;} const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'; const script=document.createElement('script'); script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; script.onload=()=>res(); document.head.appendChild(link); document.body.appendChild(script); }); }
+    async function showMap(ll){ document.getElementById('map_wrap').style.display='block'; await ensureLeaflet(); if (!st.map){ st.map=L.map('map').setView([ll.lat, ll.lng], 16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(st.map); st.map.marker=L.marker([ll.lat, ll.lng]).addTo(st.map); } else { st.map.setView([ll.lat, ll.lng], st.map.getZoom()); st.map.marker.setLatLng([ll.lat, ll.lng]); } }
 
-    /* Map preview via Leaflet (no key) */
-    function ensureLeaflet(){
-      return new Promise((res)=>{
-        if (window.L){ res(); return; }
-        const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
-        const script=document.createElement('script'); script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-        script.onload=()=>res(); document.head.appendChild(link); document.body.appendChild(script);
-      });
-    }
-    async function showMap(ll){
-      if (!st.cfg || !Number(st.cfg.FEATURE_MAP||1)) return;
-      document.getElementById('map_wrap').style.display='block';
-      await ensureLeaflet();
-      if (!st.map){
-        st.map = L.map('map').setView([ll.lat, ll.lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(st.map);
-        st.map.marker = L.marker([ll.lat, ll.lng]).addTo(st.map);
-      } else {
-        st.map.setView([ll.lat, ll.lng], st.map.getZoom());
-        st.map.marker.setLatLng([ll.lat, ll.lng]);
-      }
-    }
-
-    /* QR scan (BarcodeDetector) */
-    const ov = document.getElementById('qr_overlay'), v = document.getElementById('qr_video');
+    /* QR (BarcodeDetector) */
+    const ov=document.getElementById('qr_overlay'), v=document.getElementById('qr_video');
     document.getElementById('btn_qr').onclick = async ()=>{
-      if (!st.cfg || !Number(st.cfg.FEATURE_QR||1)) { alert("Tính năng QR đang tắt."); return; }
+      if (!Number(st.cfg.FEATURE_QR||1)) { alert("Tính năng QR đang tắt."); return; }
       if (!('BarcodeDetector' in window)) { alert("Thiết bị không hỗ trợ BarcodeDetector."); return; }
       try{
-        const det = new BarcodeDetector({formats:['qr_code','code_128','code_39']});
-        st.mediaStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-        v.srcObject = st.mediaStream; ov.style.display='flex';
-        const tick = async ()=>{
-          if (ov.style.display==='none') return;
-          try{
-            const caps = await det.detect(v);
-            if (caps && caps.length){
-              const txt = caps[0].rawValue||"";
-              ov.style.display='none';
-              stopMedia();
-              el_q.value = txt;
-              await reloadList();
-              // nếu QR chứa đúng mã MBA -> tự chọn
-              const pick = Array.from(el_list.querySelectorAll('[data-id]')).find(d=>d.dataset.id===txt);
-              if (pick){ pick.click(); }
-              return;
-            }
-          }catch(e){}
-          requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-        ov.onclick = ()=>{ ov.style.display='none'; stopMedia(); };
+        const det=new BarcodeDetector({formats:['qr_code','code_128','code_39']});
+        st.mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); v.srcObject=st.mediaStream; ov.style.display='flex';
+        const tick=async()=>{ if (ov.style.display==='none') return; try{ const caps=await det.detect(v); if (caps && caps.length){ const txt=caps[0].rawValue||""; ov.style.display='none'; stopMedia(); el_q.value=txt; await reloadList(); const pick=Array.from(el_list.querySelectorAll('[data-id]')).find(d=>d.dataset.id===txt); if (pick){ pick.click(); } return; } }catch(e){} requestAnimationFrame(tick); }; requestAnimationFrame(tick); ov.onclick=()=>{ ov.style.display='none'; stopMedia(); };
       }catch(e){ alert("Không mở được camera: "+e.message); }
     };
     function stopMedia(){ try{ st.mediaStream.getTracks().forEach(t=>t.stop()); }catch(e){} }
 
-    /* File -> dataURL */
-    async function fileToDataURL(input){
-      const f = input.files && input.files[0]; if (!f) return "";
-      return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
-    }
+    /* File → dataURL */
+    async function fileToDataURL(input){ const f=input.files && input.files[0]; if(!f) return ""; return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
 
-    /* Local queue (offline) */
+    /* Offline queue */
     const QKEY="mba_queue";
     function getQueue(){ try{ return JSON.parse(localStorage.getItem(QKEY)||"[]"); }catch(_){ return []; } }
     function setQueue(v){ localStorage.setItem(QKEY, JSON.stringify(v||[])); }
     function showQueue(){ const n=getQueue().length; document.getElementById('queue_info').textContent = n?`Hàng đợi chưa gửi: ${n}`:""; }
-    async function flushQueue(){
-      if (!navigator.onLine) return;
-      const q=getQueue(); if (!q.length) return;
-      const keep=[];
-      for (const it of q){
-        try{ await apiPost(it.action, it.data); }catch(e){ keep.push(it); }
-      }
-      setQueue(keep); showQueue();
-    }
+    async function flushQueue(){ if (!navigator.onLine) return; const q=getQueue(); if (!q.length) return; const keep=[]; for (const it of q){ try{ await apiPost(it.action, it.data); }catch(e){ keep.push(it); } } setQueue(keep); showQueue(); }
 
     /* Submit reading */
     document.getElementById('btn_submit').onclick = async ()=>{
@@ -367,25 +291,23 @@
         if (!st.pick) { alert("Chọn máy biến áp trước"); return; }
         const payload = {
           transformer_id: st.pick.id,
-          V_kV: numOrEmpty('f_V'), I_A: numOrEmpty('f_I'), P_kW: numOrEmpty('f_P'),
-          temp_C: numOrEmpty('f_temp'), oilTemp_C: numOrEmpty('f_oil'),
-          tapPos: val('f_tap'), load_pct: numOrEmpty('f_load'),
+          V_kV: num('f_V'), I_A: num('f_I'), P_kW: num('f_P'),
+          temp_C: num('f_temp'), oilTemp_C: num('f_oil'),
+          tapPos: val('f_tap'), load_pct: num('f_load'),
           status: document.getElementById('f_status').value, note: val('f_note'),
           deviceId: navigator.userAgent.slice(0,120)
         };
         if (st.loc){ payload.lat=st.loc.lat; payload.lng=st.loc.lng; }
         const p64 = await fileToDataURL(document.getElementById('f_photo')); if (p64) payload.photoBase64=p64;
-
         if (!navigator.onLine){ enqueue_("add_reading", payload); alert("Đã lưu vào hàng đợi (offline)."); }
         else { await apiPost("add_reading", payload); alert("Đã lưu!"); }
-
-        resetInputs(['f_V','f_I','f_P','f_temp','f_oil','f_tap','f_load','f_note']); document.getElementById('f_photo').value="";
+        reset(['f_V','f_I','f_P','f_temp','f_oil','f_tap','f_load','f_note']); document.getElementById('f_photo').value="";
       }catch(e){ alert("Lỗi: "+e.message); }
     };
     function enqueue_(action, data){ const q=getQueue(); q.push({action, data}); setQueue(q); showQueue(); }
-    function resetInputs(ids){ ids.forEach(id=>document.getElementById(id).value=""); }
+    function reset(ids){ ids.forEach(id=>document.getElementById(id).value=""); }
     function val(id){ return document.getElementById(id).value.trim(); }
-    function numOrEmpty(id){ const v=val(id); return v?+v:""; }
+    function num(id){ const v=val(id); return v?+v:""; }
 
     /* History */
     document.getElementById('btn_history').onclick = async ()=>{
@@ -405,12 +327,9 @@
     };
     document.getElementById('btn_export').onclick = async ()=>{
       const id = val('h_id'), from = document.getElementById('h_from').value, to = document.getElementById('h_to').value;
-      const url = API + "&" + new URLSearchParams({fn:"export_history", id, from, to});
-      // tải về file CSV
-      const r = await fetch(url, {credentials:"same-origin"}); const t = await r.text();
-      const blob = new Blob([t], {type:"text/csv"}); const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = `history_${id||"all"}.csv`; a.click();
-      URL.revokeObjectURL(a.href);
+      const url = BASE + "?" + new URLSearchParams({p:"api", fn:"export_history", id, from, to});
+      const r = await fetch(url); const t = await r.text();
+      const blob = new Blob([t], {type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`history_${id||"all"}.csv`; a.click(); URL.revokeObjectURL(a.href);
     };
 
     /* Stats */
@@ -421,12 +340,8 @@
       const ctx1 = document.getElementById('chart1').getContext('2d');
       const ctx2 = document.getElementById('chart2').getContext('2d');
       if (chart1) chart1.destroy(); if (chart2) chart2.destroy();
-      chart1 = new Chart(ctx1, { type:'line', data:{ labels:d.series.ts, datasets:[
-        {label:'Temp (°C)', data:d.series.temp}, {label:'Oil (°C)', data:d.series.oilTemp}
-      ]}, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
-      chart2 = new Chart(ctx2, { type:'bar', data:{ labels:d.series.ts, datasets:[
-        {label:'Load %', data:d.series.load}, {label:'P kW', data:d.series.P_kW}
-      ]}, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
+      chart1 = new Chart(ctx1, { type:'line', data:{ labels:d.series.ts, datasets:[ {label:'Temp (°C)', data:d.series.temp}, {label:'Oil (°C)', data:d.series.oilTemp} ] }, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
+      chart2 = new Chart(ctx2, { type:'bar', data:{ labels:d.series.ts, datasets:[ {label:'Load %', data:d.series.load}, {label:'P kW', data:d.series.P_kW} ] }, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
     }
     document.getElementById('btn_stats').onclick = async ()=>{
       try{
@@ -440,18 +355,15 @@
     function setText(id,v){ document.getElementById(id).textContent=v; }
 
     /* SW */
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
-    }
+    if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js")); }
 
-    /* Utils */
     function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 
-    /* Init */
+    // Init
     (async function init(){
       try{
         st.me = await apiGet("me"); st.cfg = st.me.cfg||{}; setUser(st.me); guardRole(); showQueue();
-        await reloadList(); // preload
+        await reloadList();
       }catch(e){ console.warn("init:", e); }
     })();
   </script>
