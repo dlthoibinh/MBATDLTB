@@ -1,5 +1,5 @@
 /* EVN-SPC | MBA Tracker PRO — Service Worker */
-const VERSION = "v1.3.0";
+const VERSION = "v1.3.1";
 const APP_SHELL = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", e=>{
