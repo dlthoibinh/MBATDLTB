@@ -5,367 +5,586 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <title>EVN-SPC | MBA Tracker (PRO)</title>
+  <title>EVN-SPC | Theo dõi MBA (PRO)</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0ea5e9">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <style>
-    :root{ --brand:#0ea5e9; --text:#0f172a; --muted:#64748b; --ok:#16a34a; --bad:#ef4444; --bg:#f6f8fb; --card:#fff; --ring:rgba(14,165,233,.35); }
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1080px;margin:0 auto;padding:12px}
-    header{position:sticky;top:0;background:var(--bg);z-index:50;border-bottom:1px solid #e5e7eb}
-    .brand{display:flex;align-items:center;gap:10px;padding:10px 12px}
-    .dot{width:10px;height:10px;border-radius:9999px;background:var(--brand)}
-    .brand h1{margin:0;font-size:16px;font-weight:800}
+    :root{
+      --brand:#0ea5e9; --brand-d:#0b6aa2;
+      --text:#0f172a; --muted:#64748b;
+      --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
+      --bg:#f6f8fb; --card:#fff; --ring:rgba(14,165,233,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1080px;margin:0 auto;padding:8px 8px 80px}
+    header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#eaf6ff,#f6f8fb);border-bottom:1px solid #e5e7eb}
+    .brand{display:flex;align-items:center;gap:10px;padding:10px}
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .brand h1{margin:0;font-size:18px;font-weight:800}
     .right{margin-left:auto}
     .muted{color:var(--muted)}
-    nav{display:flex;gap:8px;padding:0 12px 10px;flex-wrap:wrap}
-    nav button{border:1px solid #cbd5e1;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-    nav button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.04);padding:12px;margin:12px}
+    nav{display:flex;gap:8px;padding:0 10px 10px;flex-wrap:wrap}
+    .tab{border:1px solid #cbd5e1;background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
+    .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.05);padding:12px;margin:10px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    @media (max-width:760px){ .row,.row3{grid-template-columns:1fr} .wrap{padding:8px} }
-    label{display:block;font-size:12px;color:var(--muted);margin:6px 2px}
-    input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;outline:none}
+    @media (max-width:760px){ .row,.row3{grid-template-columns:1fr} .wrap{padding:8px 8px 96px} }
+    label{display:block;font-size:13px;color:var(--muted);margin:6px 2px}
+    input,select,textarea{width:100%;padding:14px 12px;border:1px solid #cbd5e1;border-radius:12px;outline:none;font-size:16px}
     input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px var(--ring);border-color:var(--brand)}
-    .btn{border:0;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
-    .btn.secondary{background:#0b6aa2}
+    .btn{border:0;background:var(--brand);color:#fff;padding:14px 16px;border-radius:12px;cursor:pointer;font-weight:700;font-size:16px}
+    .btn.secondary{background:var(--brand-d)}
     .btn.ghost{background:#fff;border:1px solid #cbd5e1;color:#0f172a}
-    .danger{background:var(--bad)}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #e5e7eb;font-size:14px;text-align:left}
+    .btn.warn{background:var(--warn)} .btn.bad{background:var(--bad)} .btn.ok{background:var(--ok)}
+    .btn-lg{min-height:48px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid #cbd5e1}
     .kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-    .kpi .card{margin:0;padding:10px;text-align:center}
-    .kpi .num{font-weight:800;font-size:18px}
+    .kpi .card{margin:0;padding:12px;text-align:center}
+    .kpi .num{font-weight:900;font-size:20px}
     .footer{padding:40px 12px;color:var(--muted);text-align:center}
-    .warn{color:#d97706}.ok{color:var(--ok)}.bad{color:#ef4444}
-    .install{position:fixed;bottom:12px;left:12px;right:12px;background:#fff;padding:10px;border:1px solid #cbd5e1;border-radius:12px;display:none}
-    #qr_overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
-    #qr_box{background:#000;border-radius:12px;padding:8px}
-    #qr_video{width:min(96vw,520px);height:auto;border-radius:10px}
+    .status-ok{color:var(--ok)} .status-warn{color:var(--warn)} .status-bad{color:var(--bad)}
+    .dock{position:fixed;inset:auto 0 0 0;background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -8px 20px rgba(0,0,0,.06);padding:10px;z-index:60}
+    .dock .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .pick{padding:10px;border-bottom:1px solid #eee;cursor:pointer;border-radius:8px}
+    .pick:hover{background:#f3f6fb}
+    .offline{display:none;position:fixed;top:0;left:0;right:0;background:#fff3cd;color:#7a5d00;border-bottom:1px solid #ffeeba;padding:8px;z-index:80;text-align:center}
+    .step{display:flex;gap:8px;align-items:center;margin:4px 0}
+    .dotx{width:18px;height:18px;border-radius:999px;background:#e2e8f0;display:inline-block}
+    .step.done .dotx{background:var(--ok)} .step.cur .dotx{background:var(--brand)}
+    .step .t{font-weight:700}
     #map{height:220px;border-radius:12px;border:1px solid #e5e7eb}
+    #qr_overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
+    #qr_video{width:min(96vw,520px);height:auto;border-radius:12px}
+
+    /* Modal lịch sử điều chuyển */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001}
+    .modal .box{background:#fff;border:1px solid #e5e7eb;border-radius:14px;max-width:760px;width:92vw;max-height:82vh;overflow:auto;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .timeline .item{border-left:3px solid var(--brand);padding:10px 10px 10px 12px;margin:10px 0;background:#f9fbff;border-radius:8px}
+    .timeline .hdr{font-weight:800}
+    .timeline .sub{font-size:12px;color:var(--muted)}
+    .timeline .tag{display:inline-block;padding:2px 8px;border:1px solid #cbd5e1;border-radius:999px;font-size:12px;margin-left:6px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="dot"></div>
-        <h1>EVN-SPC | MBA Tracker PRO</h1>
-        <span class="right muted" id="usr">Đang tải người dùng…</span>
-      </div>
-      <nav>
-        <button class="active" data-tab="tab-input">Nhập liệu</button>
-        <button data-tab="tab-history">Lịch sử</button>
-        <button data-tab="tab-stats">Thống kê</button>
-        <button data-tab="tab-report">Báo cáo</button>
-      </nav>
-    </header>
+<div class="offline" id="offlineBar">Mất kết nối. Dữ liệu sẽ được lưu tạm và gửi khi có mạng.</div>
 
-    <!-- Nhập liệu -->
-    <section id="tab-input" class="card">
-      <div class="row">
-        <div>
-          <label>Máy biến áp</label>
-          <div class="row">
-            <div><input id="f_q" placeholder="Tìm mã/tên/khu vực…"></div>
-            <div class="right" style="display:flex;gap:8px;justify-content:flex-end">
-              <button class="btn ghost" id="btn_qr" title="Quét QR MBA">QR</button>
-              <button class="btn ghost" id="btn_reload">Tải DS</button>
-            </div>
-          </div>
-          <div class="muted" id="f_pick_info"></div>
-          <div id="f_list" class="card" style="max-height:240px;overflow:auto"></div>
-        </div>
-        <div>
-          <div class="row">
-            <div><label>Điện áp V (kV)</label><input id="f_V" type="number" step="0.01"></div>
-            <div><label>Dòng I (A)</label><input id="f_I" type="number" step="0.1"></div>
-          </div>
-          <div class="row">
-            <div><label>Công suất P (kW)</label><input id="f_P" type="number" step="0.1"></div>
-            <div><label>Nhiệt độ cuộn (°C)</label><input id="f_temp" type="number" step="0.1"></div>
-          </div>
-          <div class="row">
-            <div><label>Nhiệt độ dầu (°C)</label><input id="f_oil" type="number" step="0.1"></div>
-            <div><label>Vị trí nấc (tap)</label><input id="f_tap" type="text" placeholder="1..n"></div>
-          </div>
-          <div class="row">
-            <div><label>Tải (%)</label><input id="f_load" type="number" step="0.1"></div>
-            <div>
-              <label>Trạng thái</label>
-              <select id="f_status"><option>OK</option><option>WARNING</option><option>ALARM</option></select>
-            </div>
-          </div>
-          <label>Ghi chú</label><textarea id="f_note" rows="2" placeholder="Ghi chú hiện trường…"></textarea>
-          <div class="row">
-            <div class="row">
-              <div><label>Ảnh (tuỳ chọn)</label><input id="f_photo" type="file" accept="image/*" capture="environment"></div>
-            </div>
-            <div class="row">
-              <div><label>Vị trí</label>
-                <div style="display:flex;gap:8px">
-                  <button class="btn secondary" id="btn_loc">Lấy vị trí</button>
-                  <span class="muted" id="loc_info"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-            <button class="btn" id="btn_submit">Lưu</button>
-            <span class="muted" id="queue_info"></span>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>EVN-SPC | Theo dõi MBA (PRO)</h1>
+      <span class="right muted" id="usr">Đang tải…</span>
+    </div>
+    <nav>
+      <button class="tab active" data-tab="tab-input">Nhập số liệu</button>
+      <button class="tab" data-tab="tab-history">Lịch sử</button>
+      <button class="tab" data-tab="tab-stats">Thống kê</button>
+      <button class="tab" data-tab="tab-transfer">Điều chuyển MBA</button>
+      <button class="tab" data-tab="tab-report">Báo cáo sự cố</button>
+    </nav>
+  </header>
+
+  <!-- NHẬP SỐ LIỆU -->
+  <section id="tab-input" class="card">
+    <div class="row">
+      <div>
+        <label>Chọn máy biến áp</label>
+        <div class="row">
+          <div><input id="f_q" placeholder="Gõ mã/tên/khu vực để tìm…"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-lg ghost" id="btn_qr" title="Quét QR">Quét QR</button>
+            <button class="btn btn-lg ghost" id="btn_reload">Tải danh sách</button>
           </div>
         </div>
+        <div class="muted" id="f_pick_info">Chưa chọn MBA.</div>
+        <div id="f_list" class="card" style="max-height:260px;overflow:auto"></div>
       </div>
-    </section>
+      <div>
+        <div class="row">
+          <div><label>Điện áp V (kV)</label><input id="f_V" type="number" step="0.01" inputmode="decimal" placeholder="Ví dụ 22.0"></div>
+          <div><label>Dòng I (A)</label><input id="f_I" type="number" step="0.1" inputmode="decimal" placeholder="Ví dụ 45.3"></div>
+        </div>
+        <div class="row">
+          <div><label>Công suất P (kW)</label><input id="f_P" type="number" step="0.1" inputmode="decimal"></div>
+          <div><label>Nhiệt độ cuộn (°C)</label><input id="f_temp" type="number" step="0.1" inputmode="decimal"></div>
+        </div>
+        <div class="row">
+          <div><label>Nhiệt độ dầu (°C)</label><input id="f_oil" type="number" step="0.1" inputmode="decimal"></div>
+          <div><label>Vị trí nấc (tap)</label><input id="f_tap" type="text" placeholder="1…n"></div>
+        </div>
+        <div class="row">
+          <div><label>Tải (%)</label><input id="f_load" type="number" step="0.1" inputmode="decimal" placeholder="0–150"></div>
+          <div>
+            <label>Trạng thái</label>
+            <select id="f_status">
+              <option value="OK">OK (bình thường)</option>
+              <option value="WARNING">Cảnh báo</option>
+              <option value="ALARM">Báo động</option>
+            </select>
+          </div>
+        </div>
+        <label>Ghi chú hiện trường</label>
+        <textarea id="f_note" rows="2" placeholder="Ví dụ: tiếng ồn tăng, nóng khu vực cuộn…"></textarea>
+        <div class="row">
+          <div>
+            <label>Ảnh hiện trường (tùy chọn)</label>
+            <input id="f_photo" type="file" accept="image/*" capture="environment">
+          </div>
+          <div>
+            <label>Vị trí GPS</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-lg secondary" id="btn_loc">Lấy vị trí</button>
+              <span class="muted" id="loc_info"></span>
+            </div>
+          </div>
+        </div>
+        <div class="muted" id="queue_info" style="margin-top:6px"></div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Lịch sử -->
-    <section id="tab-history" class="card" hidden>
-      <div style="display:flex;gap:8px;align-items:center">
-        <h3 style="margin:0">Lịch sử</h3>
+  <!-- LỊCH SỬ -->
+  <section id="tab-history" class="card" hidden>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <h3 style="margin:0">Lịch sử nhập</h3>
+      <div class="right"></div>
+      <input id="h_id" placeholder="Mã MBA (bỏ trống = tất cả)" style="max-width:180px">
+      <input id="h_from" type="date"><input id="h_to" type="date">
+      <button class="btn btn-lg" id="btn_history">Tải</button>
+      <button class="btn btn-lg ghost" id="btn_export">Xuất CSV</button>
+    </div>
+    <div style="overflow:auto;margin-top:6px">
+      <table id="hist_tbl">
+        <thead><tr><th>Thời gian</th><th>MBA</th><th>P (kW)</th><th>T (°C)</th><th>Dầu (°C)</th><th>Tải %</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- THỐNG KÊ -->
+  <section id="tab-stats" class="card" hidden>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <h3 style="margin:0">Thống kê & cảnh báo</h3>
+      <div class="right"></div>
+      <input id="s_id" placeholder="Mã MBA (tùy chọn)" style="max-width:180px">
+      <input id="s_from" type="date"><input id="s_to" type="date">
+      <button class="btn btn-lg" id="btn_stats">Phân tích</button>
+    </div>
+    <div class="kpi" style="margin-top:8px">
+      <div class="card"><div class="muted">Số bản ghi</div><div class="num" id="k_count">0</div></div>
+      <div class="card"><div class="muted">Nhiệt độ cuộn TB</div><div class="num" id="k_avgT">0</div></div>
+      <div class="card"><div class="muted">Nhiệt độ dầu TB</div><div class="num" id="k_avgO">0</div></div>
+      <div class="card"><div class="muted">Tải TB (%)</div><div class="num" id="k_avgL">0</div></div>
+      <div class="card"><div class="muted">Tải max (%)</div><div class="num" id="k_maxL">0</div></div>
+    </div>
+    <div class="card"><canvas id="chart1" height="160"></canvas></div>
+    <div class="card"><canvas id="chart2" height="160"></canvas></div>
+    <div class="card">
+      <h4 style="margin:6px 0">Bất thường gần đây</h4>
+      <ul id="anom" style="margin:0 0 6px 18px"></ul>
+    </div>
+  </section>
+
+  <!-- ĐIỀU CHUYỂN MBA -->
+  <section id="tab-transfer" class="card" hidden>
+    <h3 style="margin:0 0 6px">Điều chuyển máy biến áp</h3>
+    <div class="card" style="margin:8px 0">
+      <div class="step cur"><span class="dotx"></span><span class="t">B1. Tạo yêu cầu</span><span class="muted">— nhập nơi đến & lý do</span></div>
+      <div class="step"><span class="dotx"></span><span class="t">B2. Duyệt</span><span class="muted">— lãnh đạo/đội trưởng</span></div>
+      <div class="step"><span class="dotx"></span><span class="t">B3. Vận chuyển</span><span class="muted">— chụp ảnh, lấy GPS</span></div>
+      <div class="step"><span class="dotx"></span><span class="t">B4. Lắp đặt</span><span class="muted">— cập nhật vị trí mới</span></div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Chọn MBA</label>
+        <div class="row">
+          <div><input id="t_q" placeholder="Gõ mã/tên/khu vực…"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-lg ghost" id="t_qr">Quét QR</button>
+            <button class="btn btn-lg ghost" id="t_reload">Tải danh sách</button>
+          </div>
+        </div>
+        <div class="muted" id="t_pick_info">Chưa chọn MBA.</div>
+        <div id="t_list" class="card" style="max-height:240px;overflow:auto"></div>
+      </div>
+      <div>
+        <div class="row">
+          <div><label>Vị trí hiện tại</label><input id="t_from" readonly></div>
+          <div><label>Nơi đến</label><input id="t_to" placeholder="VD: TBA Thới Bình / Kho…"></div>
+        </div>
+        <label>Lý do điều chuyển</label><input id="t_reason" placeholder="Ví dụ: tăng tải khu vực, sửa chữa…">
+        <div class="row">
+          <div><label>Ảnh xuất kho/nhấc lên (tùy chọn)</label><input id="t_start_photo" type="file" accept="image/*" capture="environment"></div>
+          <div><label>Ảnh khi lắp đặt (tùy chọn)</label><input id="t_end_photo" type="file" accept="image/*" capture="environment"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn-lg" id="btn_t_create">Tạo yêu cầu</button>
+          <button class="btn btn-lg secondary" id="btn_t_start">Bắt đầu vận chuyển</button>
+          <button class="btn btn-lg ok" id="btn_t_complete">Hoàn tất lắp đặt</button>
+          <span class="muted" id="t_msg"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:8px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <h4 style="margin:0">Danh sách điều chuyển</h4>
         <div class="right"></div>
-        <input id="h_id" placeholder="Mã MBA (tuỳ chọn)" style="max-width:180px">
-        <input id="h_from" type="date"><input id="h_to" type="date">
-        <button class="btn" id="btn_history">Tải</button>
-        <button class="btn ghost" id="btn_export">Export CSV</button>
+        <select id="t_filter">
+          <option value="">Tất cả</option><option>REQUESTED</option><option>APPROVED</option>
+          <option>IN_TRANSIT</option><option>INSTALLED</option><option>CLOSED</option><option>CANCELLED</option>
+        </select>
+        <input id="t_f_id" placeholder="Lọc theo mã MBA" style="max-width:180px">
+        <button class="btn btn-lg ghost" id="btn_t_history" title="Xem lịch sử chiếc MBA đang chọn hoặc theo mã ô bên">Xem lịch sử máy</button>
+        <button class="btn btn-lg ghost" id="btn_t_load">Tải</button>
       </div>
       <div style="overflow:auto">
-        <table id="hist_tbl">
-          <thead><tr>
-            <th>Thời gian</th><th>MBA</th><th>P(kW)</th><th>T(°C)</th><th>Oil(°C)</th><th>Tải%</th><th>TT</th><th>Ghi chú</th>
-          </tr></thead>
+        <table id="t_tbl">
+          <thead><tr><th>Mã phiếu</th><th>MBA</th><th>Từ</th><th>Đến</th><th>Trạng thái</th><th>Tạo bởi</th><th>Thời gian</th><th>Hành động</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Thống kê -->
-    <section id="tab-stats" class="card" hidden>
-      <div style="display:flex;gap:8px;align-items:center">
-        <h3 style="margin:0">Thống kê</h3>
-        <div class="right"></div>
-        <input id="s_id" placeholder="Mã MBA (tuỳ chọn)" style="max-width:180px">
-        <input id="s_from" type="date"><input id="s_to" type="date">
-        <button class="btn" id="btn_stats">Phân tích</button>
+  <!-- BÁO CÁO SỰ CỐ -->
+  <section id="tab-report" class="card" hidden>
+    <h3 style="margin:0 0 8px">Báo cáo nhanh</h3>
+    <div class="row">
+      <div>
+        <label>Mã MBA</label><input id="r_id" placeholder="VD: MBA001">
+        <label>Loại sự cố</label><input id="r_type" placeholder="rò rỉ dầu / quá nhiệt / tiếng ồn…">
+        <label>Mức độ</label>
+        <select id="r_sev"><option>minor</option><option>major</option><option>critical</option></select>
+        <label>Ảnh (tùy chọn)</label><input id="r_photo" type="file" accept="image/*" capture="environment">
       </div>
-      <div class="kpi" style="margin-top:8px">
-        <div class="card"><div class="muted">Bản ghi</div><div class="num" id="k_count">0</div></div>
-        <div class="card"><div class="muted">Avg Temp</div><div class="num" id="k_avgT">0</div></div>
-        <div class="card"><div class="muted">Avg Oil</div><div class="num" id="k_avgO">0</div></div>
-        <div class="card"><div class="muted">Avg Load%</div><div class="num" id="k_avgL">0</div></div>
-        <div class="card"><div class="muted">Max Load%</div><div class="num" id="k_maxL">0</div></div>
-      </div>
-      <div class="card"><canvas id="chart1" height="160"></canvas></div>
-      <div class="card"><canvas id="chart2" height="160"></canvas></div>
-      <div class="card">
-        <h4 style="margin:6px 0">Bất thường gần đây</h4>
-        <ul id="anom" style="margin:0 0 6px 18px"></ul>
-      </div>
-    </section>
-
-    <!-- Báo cáo -->
-    <section id="tab-report" class="card" hidden>
-      <h3 style="margin-top:0">Báo cáo sự cố/điểm bất thường</h3>
-      <div class="row">
-        <div>
-          <label>Mã MBA</label><input id="r_id" placeholder="VD: MBA001">
-          <label>Loại sự cố</label><input id="r_type" placeholder="rò rỉ dầu / quá nhiệt / tiếng ồn…">
-          <label>Mức độ</label>
-          <select id="r_sev"><option>minor</option><option>major</option><option>critical</option></select>
-          <label>Ảnh (tuỳ chọn)</label><input id="r_photo" type="file" accept="image/*" capture="environment">
+      <div>
+        <label>Nội dung chi tiết</label><textarea id="r_msg" rows="6" placeholder="Mô tả rõ vị trí, hiện tượng…"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <button class="btn secondary btn-lg" id="r_loc">Lấy vị trí</button>
+          <span class="muted" id="r_locinfo"></span>
+          <div class="right"></div>
+          <button class="btn bad btn-lg" id="btn_report">Gửi báo cáo</button>
         </div>
-        <div>
-          <label>Nội dung</label><textarea id="r_msg" rows="6" placeholder="Mô tả chi tiết…"></textarea>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-            <button class="btn secondary" id="r_loc">Vị trí</button>
-            <span class="muted" id="r_locinfo"></span>
-            <div class="right"></div>
-            <button class="btn danger" id="btn_report">Gửi báo cáo</button>
-          </div>
-          <div id="map_wrap" style="margin-top:8px;display:none">
-            <div id="map"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="install" id="installBox">
-      <div style="display:flex;gap:8px;align-items:center">
-        <div><b>Cài đặt PWA</b> để dùng nhanh hơn</div>
-        <div class="right"></div>
-        <button class="btn" id="btn_install">Cài đặt</button>
-        <button class="btn secondary" id="btn_install_close">Đóng</button>
+        <div id="map_wrap" style="margin-top:8px;display:none"><div id="map"></div></div>
       </div>
     </div>
+  </section>
 
-    <!-- QR Overlay -->
-    <div id="qr_overlay">
-      <div id="qr_box"><video id="qr_video" autoplay playsinline></video></div>
-    </div>
+  <div class="footer">EVN-SPC · Theo dõi MBA (PRO) · UI Việt hóa v1.3</div>
+</div>
 
-    <div class="footer">EVN-SPC · MBA Tracker PRO · v1.1</div>
+<!-- Thanh hành động dưới cho tab Nhập số liệu -->
+<div class="dock" id="dock">
+  <div class="grid">
+    <button class="btn btn-lg ghost" id="dock_qr">Quét QR</button>
+    <button class="btn btn-lg ghost" id="dock_loc">Lấy vị trí</button>
+    <button class="btn btn-lg" id="btn_submit">Lưu số liệu</button>
   </div>
+</div>
 
-  <script>
-    /* ==== CONFIG: Dán URL exec của Apps Script vào đây ==== */
-    const BASE = "https://script.google.com/macros/s/AKfycbyTRo8I5pMxVGyyRbA1rByGNNjQ2TxI5U9PJwPkqcldurmphAwpEx8jMwsNrSJW7l8z/exec";
+<!-- QR Overlay -->
+<div id="qr_overlay"><video id="qr_video" autoplay playsinline></video></div>
 
-    const st = { pick:null, loc:null, me:null, cfg:null, deferredPrompt:null, mediaStream:null, map:null };
-    document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); const tab=b.getAttribute('data-tab'); document.querySelectorAll('section.card').forEach(s=>s.hidden=(s.id!==tab)); });
+<!-- Modal Lịch sử điều chuyển theo MBA -->
+<div id="history_modal" class="modal">
+  <div class="box">
+    <div style="display:flex;gap:8px;align-items:center">
+      <h3 id="hist_title" style="margin:0">Lịch sử điều chuyển</h3>
+      <div class="right"></div>
+      <button class="btn ghost" id="hist_export">Xuất CSV</button>
+      <button class="btn bad" id="hist_close">Đóng</button>
+    </div>
+    <div id="hist_info" class="muted" style="margin:6px 0 8px"></div>
+    <div id="hist_list" class="timeline"></div>
+  </div>
+</div>
 
-    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); st.deferredPrompt=e; document.getElementById('installBox').style.display='block'; });
-    document.getElementById('btn_install').onclick = async ()=>{ if(!st.deferredPrompt) return; st.deferredPrompt.prompt(); st.deferredPrompt=null; document.getElementById('installBox').style.display='none'; };
-    document.getElementById('btn_install_close').onclick = ()=>{ document.getElementById('installBox').style.display='none'; };
+<script>
+/* ===== BASE (điền URL exec OK) ===== */
+const DEFAULT_BASE = "https://script.google.com/macros/s/AKfycbyTRo8I5pMxVGyyRbA1rByGNNjQ2TxI5U9PJwPkqcldurmphAwpEx8jMwsNrSJW7l8z/exec";
+let BASE = localStorage.getItem("MBA_BASE") || DEFAULT_BASE;
+function setBase(url){ localStorage.setItem("MBA_BASE", url.trim()); location.reload(); }
 
-    function setUser(u){ const el=document.getElementById('usr'); el.textContent=`${u.email||'anonymous'} · ${u.role||'guest'} · ${navigator.onLine?'Online':'Offline'}`; }
-    window.addEventListener('online', flushQueue); window.addEventListener('offline', ()=>{ if(st.me) setUser(st.me); });
+/* ===== API: dùng GET + form POST (tránh preflight) ===== */
+async function apiGet(fn, params={}) {
+  const u=new URL(BASE); Object.entries(Object.assign({p:"api",fn},params)).forEach(([k,v])=>u.searchParams.set(k,v));
+  const r=await fetch(u.toString()); if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||"API"); return j.data;
+}
+async function apiPost(action, data={}) {
+  const u=new URL(BASE); const form=new URLSearchParams(); form.set("p","api"); form.set("action",action); form.set("payload",JSON.stringify(data));
+  const r=await fetch(u.toString(),{method:"POST",body:form}); if(!r.ok) throw new Error("HTTP "+r.status);
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||"API"); return j.data;
+}
 
-    /* --- API helpers: GET/POST không preflight --- */
-    async function apiGet(fn, params = {}) {
-      const qs = new URLSearchParams(Object.assign({ p:'api', fn }, params));
-      const r = await fetch(BASE + '?' + qs.toString(), { method:'GET' });
-      if (!r.ok) throw new Error('HTTP '+r.status);
-      const j = await r.json(); if (!j.ok) throw new Error(j.error||'API error'); return j.data;
-    }
-    async function apiPost(action, data = {}) {
-      const form = new URLSearchParams(); form.set('p','api'); form.set('action',action); form.set('payload', JSON.stringify(data));
-      const r = await fetch(BASE, { method:'POST', body: form });
-      if (!r.ok) throw new Error('HTTP '+r.status);
-      const j = await r.json(); if (!j.ok) throw new Error(j.error||'API error'); return j.data;
-    }
+/* ===== State & utils ===== */
+const st={pick:null,loc:null,me:null,cfg:null,mediaStream:null,map:null};
+const $=id=>document.getElementById(id);
+function val(id){ return $(id).value.trim(); }
+function setText(id,t){ $(id).textContent=t; }
+function numOrEmpty(id){ const v=val(id); return v?+v:""; }
+function reset(ids){ ids.forEach(i=>$(i).value=""); }
+function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 
-    function guardRole(){ if(!st.me) return; const canWrite=["admin","lanhdao","leader","totruong","trucban","nhanvien"].includes(st.me.role) || String(st.me.cfg.AUTH_OPEN||"0")==="1"; document.getElementById('btn_submit').disabled=!canWrite; document.getElementById('btn_report').disabled=!canWrite; }
+/* ===== Tabs ===== */
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const tab=b.getAttribute('data-tab');
+  document.querySelectorAll('section.card').forEach(s=>s.hidden=(s.id!==tab));
+  $('dock').style.display = (tab==='tab-input')?'block':'none';
+});
 
-    /* Danh sách MBA */
-    const el_q = document.getElementById('f_q'), el_list=document.getElementById('f_list'), el_info=document.getElementById('f_pick_info');
-    async function reloadList(){
-      const q = el_q.value.trim();
-      const data = await apiGet("list_transformers",{q});
-      el_list.innerHTML = data.map(r=>`<div class="row" style="padding:8px;border-bottom:1px solid #eee;cursor:pointer" data-id="${r.id}" data-name="${r.name}"><div><b>${r.id}</b> — ${r.name}<div class="muted" style="font-size:12px">${r.location||""}</div></div><div style="text-align:right">${r.rated_kVA||""} kVA</div></div>`).join("");
-      el_list.querySelectorAll('[data-id]').forEach(d=>d.onclick=()=>{ st.pick={id:d.dataset.id, name:d.dataset.name}; el_info.textContent=`Đã chọn: ${st.pick.id} — ${st.pick.name}`; });
-    }
-    el_q.addEventListener('input', debounce(reloadList, 200));
-    document.getElementById('btn_reload').onclick = reloadList;
+/* ===== Offline banner & queue ===== */
+const QKEY="mba_queue";
+function getQueue(){ try{return JSON.parse(localStorage.getItem(QKEY)||"[]");}catch(_){return[];} }
+function setQueue(v){ localStorage.setItem(QKEY, JSON.stringify(v||[])); }
+function showQueue(){ const n=getQueue().length; setText('queue_info', n?`Hàng đợi chưa gửi: ${n}`:""); }
+async function flushQueue(){ if(!navigator.onLine) return; const q=getQueue(); if(!q.length) return; const keep=[]; for(const it of q){ try{ await apiPost(it.action,it.data);}catch(e){ keep.push(it);} } setQueue(keep); showQueue(); }
+window.addEventListener('online', ()=>{ $('offlineBar').style.display='none'; flushQueue(); });
+window.addEventListener('offline', ()=>{ $('offlineBar').style.display='block'; });
 
-    /* Vị trí + map */
-    document.getElementById('btn_loc').onclick = ()=>getLocation('loc_info');
-    document.getElementById('r_loc').onclick  = ()=>getLocation('r_locinfo');
-    async function getLocation(infoId){
-      try{
-        const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res, rej, {enableHighAccuracy:true,timeout:10000}));
-        st.loc = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-        document.getElementById(infoId).textContent = `${st.loc.lat.toFixed(6)}, ${st.loc.lng.toFixed(6)}`;
-        if (Number(st.cfg.FEATURE_MAP||1)) showMap(st.loc);
-      }catch(e){ alert("Không lấy được vị trí: "+e.message); }
-    }
-    function ensureLeaflet(){ return new Promise((res)=>{ if (window.L){res();return;} const link=document.createElement('link'); link.rel='stylesheet'; link.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'; const script=document.createElement('script'); script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'; script.onload=()=>res(); document.head.appendChild(link); document.body.appendChild(script); }); }
-    async function showMap(ll){ document.getElementById('map_wrap').style.display='block'; await ensureLeaflet(); if (!st.map){ st.map=L.map('map').setView([ll.lat, ll.lng], 16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(st.map); st.map.marker=L.marker([ll.lat, ll.lng]).addTo(st.map); } else { st.map.setView([ll.lat, ll.lng], st.map.getZoom()); st.map.marker.setLatLng([ll.lat, ll.lng]); } }
+/* ===== User info ===== */
+function setUser(u){ $('usr').textContent = `${u.email||'anonymous'} · ${u.role||'guest'} · ${navigator.onLine?'Online':'Offline'}`; }
 
-    /* QR (BarcodeDetector) */
-    const ov=document.getElementById('qr_overlay'), v=document.getElementById('qr_video');
-    document.getElementById('btn_qr').onclick = async ()=>{
-      if (!Number(st.cfg.FEATURE_QR||1)) { alert("Tính năng QR đang tắt."); return; }
-      if (!('BarcodeDetector' in window)) { alert("Thiết bị không hỗ trợ BarcodeDetector."); return; }
-      try{
-        const det=new BarcodeDetector({formats:['qr_code','code_128','code_39']});
-        st.mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); v.srcObject=st.mediaStream; ov.style.display='flex';
-        const tick=async()=>{ if (ov.style.display==='none') return; try{ const caps=await det.detect(v); if (caps && caps.length){ const txt=caps[0].rawValue||""; ov.style.display='none'; stopMedia(); el_q.value=txt; await reloadList(); const pick=Array.from(el_list.querySelectorAll('[data-id]')).find(d=>d.dataset.id===txt); if (pick){ pick.click(); } return; } }catch(e){} requestAnimationFrame(tick); }; requestAnimationFrame(tick); ov.onclick=()=>{ ov.style.display='none'; stopMedia(); };
-      }catch(e){ alert("Không mở được camera: "+e.message); }
+/* ===== Danh sách MBA (Input) ===== */
+const el_q=$('f_q'), el_list=$('f_list'), el_info=$('f_pick_info');
+async function reloadList(){
+  const q=el_q.value.trim(); const data=await apiGet("list_transformers",{q});
+  el_list.innerHTML = data.map(r=>`<div class="pick" data-id="${r.id}" data-name="${r.name}">
+    <div><b>${r.id}</b> — ${r.name}</div><div class="muted" style="font-size:12px">${r.location||""} · ${r.rated_kVA||""} kVA</div>
+  </div>`).join("");
+  el_list.querySelectorAll('.pick').forEach(d=>d.onclick=()=>{ st.pick={id:d.dataset.id,name:d.dataset.name}; el_info.textContent=`Đã chọn: ${st.pick.id} — ${st.pick.name}`; });
+}
+el_q.addEventListener('input', debounce(reloadList,200));
+$('btn_reload').onclick = reloadList;
+
+/* ===== Geolocation ===== */
+$('btn_loc').onclick = ()=>getLoc('loc_info');
+$('dock_loc').onclick = ()=>getLoc('loc_info');
+$('r_loc').onclick = ()=>getLoc('r_locinfo');
+async function getLoc(infoId){
+  try{
+    const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:10000}));
+    st.loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    if (infoId) $(infoId).textContent = `${st.loc.lat.toFixed(6)}, ${st.loc.lng.toFixed(6)}`;
+  }catch(e){ alert("Không lấy được vị trí: "+e.message); }
+}
+async function getLocX_(){ try{const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:8000})); return {lat:p.coords.latitude,lng:p.coords.longitude}; }catch(_){return {lat:"",lng:""};} }
+
+/* ===== QR (chung) ===== */
+const ov=$('qr_overlay'), v=$('qr_video');
+$('btn_qr').onclick = openQR; $('dock_qr').onclick = openQR; $('t_qr').onclick = openQR;
+async function openQR(){
+  if (!('BarcodeDetector' in window)) return alert("Thiết bị không hỗ trợ quét QR.");
+  try{
+    const det=new BarcodeDetector({formats:['qr_code','code_128','code_39']});
+    st.mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); v.srcObject=st.mediaStream; ov.style.display='flex';
+    const tick=async()=>{ if(ov.style.display==='none') return; try{ const caps=await det.detect(v); if(caps&&caps.length){ const txt=caps[0].rawValue||""; ov.style.display='none'; stopCam(); el_q.value=txt; $('t_q').value=txt; reloadList(); t_reload(); return; } }catch(_){} requestAnimationFrame(tick); }; requestAnimationFrame(tick);
+    ov.onclick=()=>{ ov.style.display='none'; stopCam(); };
+  }catch(e){ alert("Không mở camera: "+e.message); }
+}
+function stopCam(){ try{ st.mediaStream.getTracks().forEach(t=>t.stop()); }catch(_){ } }
+
+/* ===== File→Base64 ===== */
+async function fileToDataURL(input){ const f=input.files&&input.files[0]; if(!f) return ""; return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
+
+/* ===== Lưu số liệu ===== */
+$('btn_submit').onclick = async ()=>{
+  try{
+    if(!st.pick) return alert("Vui lòng chọn máy biến áp trước.");
+    const payload = {
+      transformer_id: st.pick.id,
+      V_kV: numOrEmpty('f_V'), I_A: numOrEmpty('f_I'), P_kW: numOrEmpty('f_P'),
+      temp_C: numOrEmpty('f_temp'), oilTemp_C: numOrEmpty('f_oil'),
+      tapPos: val('f_tap'), load_pct: numOrEmpty('f_load'),
+      status: $('f_status').value, note: val('f_note'), deviceId: navigator.userAgent.slice(0,120)
     };
-    function stopMedia(){ try{ st.mediaStream.getTracks().forEach(t=>t.stop()); }catch(e){} }
+    if (st.loc){ payload.lat=st.loc.lat; payload.lng=st.loc.lng; }
+    const p64 = await fileToDataURL($('f_photo')); if(p64) payload.photoBase64=p64;
 
-    /* File → dataURL */
-    async function fileToDataURL(input){ const f=input.files && input.files[0]; if(!f) return ""; return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
+    if(!navigator.onLine){ enqueue_("add_reading",payload); alert("Đã lưu tạm (offline)."); }
+    else { await apiPost("add_reading",payload); alert("Đã lưu!"); }
+    reset(['f_V','f_I','f_P','f_temp','f_oil','f_tap','f_load','f_note']); $('f_photo').value="";
+  }catch(e){ alert("Lỗi: "+e.message); }
+};
+function enqueue_(action,data){ const q=getQueue(); q.push({action,data}); setQueue(q); showQueue(); }
 
-    /* Offline queue */
-    const QKEY="mba_queue";
-    function getQueue(){ try{ return JSON.parse(localStorage.getItem(QKEY)||"[]"); }catch(_){ return []; } }
-    function setQueue(v){ localStorage.setItem(QKEY, JSON.stringify(v||[])); }
-    function showQueue(){ const n=getQueue().length; document.getElementById('queue_info').textContent = n?`Hàng đợi chưa gửi: ${n}`:""; }
-    async function flushQueue(){ if (!navigator.onLine) return; const q=getQueue(); if (!q.length) return; const keep=[]; for (const it of q){ try{ await apiPost(it.action, it.data); }catch(e){ keep.push(it); } } setQueue(keep); showQueue(); }
-
-    /* Submit reading */
-    document.getElementById('btn_submit').onclick = async ()=>{
-      try{
-        if (!st.pick) { alert("Chọn máy biến áp trước"); return; }
-        const payload = {
-          transformer_id: st.pick.id,
-          V_kV: num('f_V'), I_A: num('f_I'), P_kW: num('f_P'),
-          temp_C: num('f_temp'), oilTemp_C: num('f_oil'),
-          tapPos: val('f_tap'), load_pct: num('f_load'),
-          status: document.getElementById('f_status').value, note: val('f_note'),
-          deviceId: navigator.userAgent.slice(0,120)
-        };
-        if (st.loc){ payload.lat=st.loc.lat; payload.lng=st.loc.lng; }
-        const p64 = await fileToDataURL(document.getElementById('f_photo')); if (p64) payload.photoBase64=p64;
-        if (!navigator.onLine){ enqueue_("add_reading", payload); alert("Đã lưu vào hàng đợi (offline)."); }
-        else { await apiPost("add_reading", payload); alert("Đã lưu!"); }
-        reset(['f_V','f_I','f_P','f_temp','f_oil','f_tap','f_load','f_note']); document.getElementById('f_photo').value="";
-      }catch(e){ alert("Lỗi: "+e.message); }
-    };
-    function enqueue_(action, data){ const q=getQueue(); q.push({action, data}); setQueue(q); showQueue(); }
-    function reset(ids){ ids.forEach(id=>document.getElementById(id).value=""); }
-    function val(id){ return document.getElementById(id).value.trim(); }
-    function num(id){ const v=val(id); return v?+v:""; }
-
-    /* History */
-    document.getElementById('btn_history').onclick = async ()=>{
-      try{
-        const id = val('h_id'), from = document.getElementById('h_from').value, to = document.getElementById('h_to').value;
-        const data = await apiGet("history",{id,from,to,limit:200});
-        const tb = document.querySelector('#hist_tbl tbody'); tb.innerHTML="";
-        for (const r of data){
-          const cls = r.status==="ALARM"?"bad":(r.status==="WARNING"?"warn":"ok");
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${r.tsISO||""}</td><td>${r.transformer_id||""}</td>
-                          <td>${r.P_kW||""}</td><td>${r.temp_C||""}</td><td>${r.oilTemp_C||""}</td>
-                          <td>${r.load_pct||""}</td><td class="${cls}">${r.status||""}</td><td>${(r.note||"").slice(0,120)}</td>`;
-          tb.appendChild(tr);
-        }
-      }catch(e){ alert("Lỗi tải lịch sử: "+e.message); }
-    };
-    document.getElementById('btn_export').onclick = async ()=>{
-      const id = val('h_id'), from = document.getElementById('h_from').value, to = document.getElementById('h_to').value;
-      const url = BASE + "?" + new URLSearchParams({p:"api", fn:"export_history", id, from, to});
-      const r = await fetch(url); const t = await r.text();
-      const blob = new Blob([t], {type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`history_${id||"all"}.csv`; a.click(); URL.revokeObjectURL(a.href);
-    };
-
-    /* Stats */
-    let chart1, chart2;
-    function ensureChart(){ return new Promise((res)=>{ if(window.Chart){res();return;} const s=document.createElement('script'); s.src="https://cdn.jsdelivr.net/npm/chart.js"; s.onload=()=>res(); document.body.appendChild(s); }); }
-    async function drawCharts(d){
-      await ensureChart();
-      const ctx1 = document.getElementById('chart1').getContext('2d');
-      const ctx2 = document.getElementById('chart2').getContext('2d');
-      if (chart1) chart1.destroy(); if (chart2) chart2.destroy();
-      chart1 = new Chart(ctx1, { type:'line', data:{ labels:d.series.ts, datasets:[ {label:'Temp (°C)', data:d.series.temp}, {label:'Oil (°C)', data:d.series.oilTemp} ] }, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
-      chart2 = new Chart(ctx2, { type:'bar', data:{ labels:d.series.ts, datasets:[ {label:'Load %', data:d.series.load}, {label:'P kW', data:d.series.P_kW} ] }, options:{ responsive:true, maintainAspectRatio:false, animation:false, scales:{x:{display:false}} }});
+/* ===== Lịch sử nhập ===== */
+$('btn_history').onclick = async ()=>{
+  try{
+    const data = await apiGet("history",{id:val('h_id'),from:$('h_from').value,to:$('h_to').value,limit:200});
+    const tb=document.querySelector('#hist_tbl tbody'); tb.innerHTML="";
+    for(const r of data){
+      const cls = r.status==="ALARM"?"status-bad":(r.status==="WARNING"?"status-warn":"status-ok");
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${r.tsISO||""}</td><td>${r.transformer_id||""}</td><td>${r.P_kW||""}</td>
+                      <td>${r.temp_C||""}</td><td>${r.oilTemp_C||""}</td><td>${r.load_pct||""}</td>
+                      <td class="${cls}">${r.status||""}</td><td>${(r.note||"").slice(0,120)}</td>`;
+      tb.appendChild(tr);
     }
-    document.getElementById('btn_stats').onclick = async ()=>{
-      try{
-        const id = val('s_id'), from=document.getElementById('s_from').value, to=document.getElementById('s_to').value;
-        const d = await apiGet("stats",{id,from,to});
-        setText("k_count",d.count); setText("k_avgT",d.avgTemp); setText("k_avgO",d.avgOilTemp); setText("k_avgL",d.avgLoadPct); setText("k_maxL",d.maxLoadPct);
-        const ul=document.getElementById('anom'); ul.innerHTML=""; d.anomalies.forEach(a=>{ const li=document.createElement('li'); li.textContent=`${a.tsISO} — ${a.transformer_id} — T:${a.temp_C} Oil:${a.oilTemp_C} Load:${a.load_pct}% — ${a.status}`; ul.appendChild(li); });
-        drawCharts(d);
-      }catch(e){ alert("Lỗi thống kê: "+e.message); }
-    };
-    function setText(id,v){ document.getElementById(id).textContent=v; }
+  }catch(e){ alert("Lỗi tải lịch sử: "+e.message); }
+};
+$('btn_export').onclick = async ()=>{
+  const url = new URL(BASE); url.searchParams.set('p','api'); url.searchParams.set('fn','export_history');
+  url.searchParams.set('id',val('h_id')); url.searchParams.set('from',$('h_from').value); url.searchParams.set('to',$('h_to').value);
+  const r=await fetch(url.toString()); const t=await r.text(); const blob=new Blob([t],{type:"text/csv"}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`history_${val('h_id')||"all"}.csv`; a.click(); URL.revokeObjectURL(a.href);
+};
 
-    /* SW */
-    if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js")); }
+/* ===== Thống kê ===== */
+let chart1, chart2;
+function ensureChart(){ return new Promise(res=>{ if(window.Chart){res();return;} const s=document.createElement('script'); s.src="https://cdn.jsdelivr.net/npm/chart.js"; s.onload=()=>res(); document.body.appendChild(s); }); }
+$('btn_stats').onclick = async ()=>{
+  try{
+    const d = await apiGet("stats",{id:val('s_id'),from:$('s_from').value,to:$('s_to').value});
+    setText("k_count",d.count); setText("k_avgT",d.avgTemp); setText("k_avgO",d.avgOilTemp); setText("k_avgL",d.avgLoadPct); setText("k_maxL",d.maxLoadPct);
+    const ul=$('anom'); ul.innerHTML=""; d.anomalies.forEach(a=>{ const li=document.createElement('li'); li.textContent=`${a.tsISO} — ${a.transformer_id} — T:${a.temp_C} Oil:${a.oilTemp_C} Load:${a.load_pct}% — ${a.status}`; ul.appendChild(li); });
+    await ensureChart();
+    const ctx1=document.getElementById('chart1').getContext('2d'), ctx2=document.getElementById('chart2').getContext('2d');
+    if(chart1) chart1.destroy(); if(chart2) chart2.destroy();
+    chart1=new Chart(ctx1,{type:'line',data:{labels:d.series.ts,datasets:[{label:'Nhiệt độ cuộn (°C)',data:d.series.temp},{label:'Nhiệt độ dầu (°C)',data:d.series.oilTemp}]},options:{responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{display:false}}}});
+    chart2=new Chart(ctx2,{type:'bar',data:{labels:d.series.ts,datasets:[{label:'Tải (%)',data:d.series.load},{label:'P (kW)',data:d.series.P_kW}]},options:{responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{display:false}}}});
+  }catch(e){ alert("Lỗi thống kê: "+e.message); }
+};
 
-    function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+/* ===== Điều chuyển ===== */
+const t_q=$('t_q'), t_list=$('t_list'), t_pick_info=$('t_pick_info');
+async function t_reload(){
+  const data=await apiGet("list_transformers",{q:t_q.value.trim()});
+  t_list.innerHTML=data.map(r=>`<div class="pick" data-id="${r.id}" data-name="${r.name}" data-loc="${r.location||''}">
+    <div><b>${r.id}</b> — ${r.name}</div><div class="muted" style="font-size:12px">${r.location||""}</div></div>`).join("");
+  t_list.querySelectorAll('.pick').forEach(d=>d.onclick=()=>{ st.pick={id:d.dataset.id,name:d.dataset.name,loc:d.dataset.loc}; t_pick_info.textContent=`Chọn: ${st.pick.id} — ${st.pick.name}`; $('t_from').value=st.pick.loc||""; });
+}
+t_q.addEventListener('input', debounce(t_reload,200)); $('t_reload').onclick=t_reload;
 
-    // Init
-    (async function init(){
-      try{
-        st.me = await apiGet("me"); st.cfg = st.me.cfg||{}; setUser(st.me); guardRole(); showQueue();
-        await reloadList();
-      }catch(e){ console.warn("init:", e); }
-    })();
-  </script>
+$('btn_t_create').onclick = async ()=>{
+  try{
+    if(!st.pick) return alert("Chọn MBA trước.");
+    const to=val('t_to'); if(!to) return alert("Nhập nơi đến.");
+    const reason=val('t_reason');
+    const r= await apiPost("create_transfer",{transformer_id:st.pick.id,to_location:to,reason});
+    $('t_msg').textContent=`Đã tạo phiếu: ${r.transfer_id} (${r.status})`; loadTransfers();
+  }catch(e){ alert(e.message); }
+};
+$('btn_t_start').onclick = async ()=>{
+  try{
+    const id = prompt("Nhập mã phiếu điều chuyển cần bắt đầu:"); if(!id) return;
+    const photo64 = await fileToDataURL($('t_start_photo')); const loc=await getLocX_();
+    const r = await apiPost("start_transfer",{transfer_id:id,photoBase64:photo64,lat:loc.lat,lng:loc.lng});
+    $('t_msg').textContent=`Đã bắt đầu: ${r.status}`; loadTransfers();
+  }catch(e){ alert(e.message); }
+};
+$('btn_t_complete').onclick = async ()=>{
+  try{
+    const id = prompt("Nhập mã phiếu để hoàn tất lắp đặt:"); if(!id) return;
+    const to=val('t_to'); const photo64 = await fileToDataURL($('t_end_photo')); const loc=await getLocX_();
+    const r = await apiPost("complete_transfer",{transfer_id:id,to_location:to,photoBase64:photo64,lat:loc.lat,lng:loc.lng});
+    $('t_msg').textContent=`Đã hoàn tất: ${r.status}`; loadTransfers();
+  }catch(e){ alert(e.message); }
+};
+
+$('btn_t_load').onclick = loadTransfers;
+async function loadTransfers(){
+  const stt=$('t_filter').value;
+  const idFilter = $('t_f_id').value.trim();
+  let data=await apiGet("list_transfers",{status:stt});
+  if (idFilter) data=data.filter(r=>String(r.transformer_id||'').includes(idFilter));
+  data.sort((a,b)=>String(b.createdTs||'').localeCompare(String(a.createdTs||'')));
+  const tb=document.querySelector('#t_tbl tbody'); tb.innerHTML="";
+  data.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.transfer_id}</td><td>${r.transformer_id}</td><td>${r.from_location||""}</td><td>${r.to_location||""}</td>
+                  <td><span class="pill">${r.status}</span></td><td>${r.createdBy||""}</td><td>${r.createdTs||""}</td><td></td>`;
+    const td=tr.querySelectorAll('td')[7];
+
+    // Nút "Lịch sử máy" cho từng dòng
+    const bHist=document.createElement('button'); bHist.className="btn btn-lg ghost"; bHist.textContent="Lịch sử máy";
+    bHist.onclick=()=>openHistory(r.transformer_id); td.appendChild(bHist);
+
+    const canApprove = ["admin","lanhdao","leader"].includes(st.me?.role) || String(st.cfg?.AUTH_OPEN||"0")==="1";
+    function addBtn(label,cls,fn){ const b=document.createElement('button'); b.className="btn btn-lg "+(cls||"ghost"); b.style.marginLeft="6px"; b.textContent=label; b.onclick=fn; td.appendChild(b); }
+    if (r.status==="REQUESTED" && canApprove){ addBtn("Duyệt","secondary", async()=>{ await apiPost("approve_transfer",{transfer_id:r.transfer_id}); loadTransfers(); }); addBtn("Huỷ","bad", async()=>{ await apiPost("cancel_transfer",{transfer_id:r.transfer_id}); loadTransfers(); }); }
+    if (["REQUESTED","APPROVED"].includes(r.status)){ addBtn("Bắt đầu","secondary", async()=>{ const loc=await getLocX_(); await apiPost("start_transfer",{transfer_id:r.transfer_id,lat:loc.lat,lng:loc.lng}); loadTransfers(); }); }
+    if (r.status==="IN_TRANSIT"){ addBtn("Hoàn tất","ok", async()=>{ const to=val('t_to')||r.to_location; const loc=await getLocX_(); await apiPost("complete_transfer",{transfer_id:r.transfer_id,to_location:to,lat:loc.lat,lng:loc.lng}); loadTransfers(); }); }
+
+    // Click cả dòng để mở lịch sử (tránh trùng click button)
+    tr.style.cursor='pointer'; tr.title='Bấm để xem lịch sử chiếc MBA này';
+    tr.addEventListener('click',(e)=>{ if(e.target.tagName!=='BUTTON') openHistory(r.transformer_id); });
+
+    tb.appendChild(tr);
+  });
+}
+
+/* ===== Nút Xem lịch sử máy (header) ===== */
+$('btn_t_history').onclick = ()=>{
+  const id = st.pick?.id || $('t_f_id').value.trim();
+  if (!id) { alert("Chọn MBA hoặc nhập mã vào ô 'Lọc theo mã MBA'."); return; }
+  openHistory(id);
+};
+
+/* ===== Modal lịch sử + export CSV ===== */
+$('hist_close').onclick = ()=>showHistModal(false);
+function showHistModal(on){ $('history_modal').style.display = on ? 'flex' : 'none'; }
+
+async function openHistory(transformerId){
+  try{
+    const all = await apiGet("list_transfers",{status:""});
+    const arr = all.filter(t => String(t.transformer_id) === String(transformerId))
+                   .sort((a,b)=>String(b.createdTs||'').localeCompare(String(a.createdTs||'')));
+
+    $('hist_title').textContent = `Lịch sử điều chuyển — MBA ${transformerId}`;
+    $('hist_info').textContent  = arr.length ? `Tìm thấy ${arr.length} phiếu điều chuyển` : 'Chưa có phiếu điều chuyển.';
+    const box = $('hist_list'); box.innerHTML="";
+
+    for (const t of arr){
+      const div = document.createElement('div'); div.className='item';
+      const hdr = document.createElement('div'); hdr.className='hdr';
+      hdr.innerHTML = `Phiếu <b>${t.transfer_id}</b> <span class="tag">${t.status}</span>`;
+      const sub = document.createElement('div'); sub.className='sub';
+      sub.textContent = [
+        (t.createdTs ? `Tạo: ${t.createdTs}` : null),
+        (t.createdBy ? ` · Bởi: ${t.createdBy}` : null),
+        (t.startTs ? ` · Bắt đầu: ${t.startTs}` : null),
+        (t.completeTs ? ` · Hoàn tất: ${t.completeTs}` : null)
+      ].filter(Boolean).join('');
+      const body = document.createElement('div');
+      body.innerHTML = `
+        <div>Từ: <b>${t.from_location||'-'}</b> → Đến: <b>${t.to_location||'-'}</b></div>
+        ${t.note? `<div class="muted">Ghi chú: ${t.note}</div>` : ''}`;
+      div.appendChild(hdr); div.appendChild(sub); div.appendChild(body);
+      box.appendChild(div);
+    }
+
+    $('hist_export').onclick = ()=>exportHistoryCSV(transformerId, arr);
+    showHistModal(true);
+  }catch(e){ alert("Lỗi tải lịch sử: "+e.message); }
+}
+function exportHistoryCSV(id, arr){
+  const rows = [
+    ['transfer_id','transformer_id','from','to','status','createdBy','createdTs','startTs','completeTs','note'],
+    ...arr.map(t=>[t.transfer_id,t.transformer_id,t.from_location||'',t.to_location||'',t.status||'',t.createdBy||'',t.createdTs||'',t.startTs||'',t.completeTs||'',(t.note||'').replace(/\n/g,' ')])
+  ];
+  const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`transfer_history_${id}.csv`; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ===== Service Worker ===== */
+if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+
+/* ===== INIT ===== */
+(async function init(){
+  try{
+    st.me = await apiGet("me"); st.cfg=st.me.cfg||{}; setUser(st.me);
+    showQueue(); await reloadList(); await t_reload(); await loadTransfers();
+  }catch(e){ console.warn("init", e); }
+})();
+</script>
 </body>
 </html>
